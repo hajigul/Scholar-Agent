@@ -4,9 +4,9 @@ A local, free research assistant that finds scientific papers and summarizes the
 
 It searches **arXiv** and **OpenAlex**, shows verified paper cards (title, authors, date, abstract, citation counts), and adds a short AI-written overview. The cards come straight from the sources. Only the overview is written by the model.
 
-![Home screen](docs/screenshot-home.png)
+![Home screen](ag1.png)
 
-![Search results](docs/screenshot-results.png)
+![Search results](ag2.png)
 
 ## Features
 
