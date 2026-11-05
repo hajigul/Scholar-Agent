@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ScholarAgent</title>
+<style>
+:root{--bg:#0b0f17;--panel:#111827;--panel2:#162033;--line:#233049;--text:#e6edf7;--muted:#8da0bd;--accent:#7c9cff;--accent2:#35d0ba;--warn:#f5b84b;--bad:#ff6b6b;--shadow:0 8px 30px rgba(0,0,0,.35)}
+[data-theme=light]{--bg:#f4f6fb;--panel:#ffffff;--panel2:#eef2fa;--line:#dbe3f1;--text:#101828;--muted:#5b6b86;--accent:#4a63e7;--accent2:#0f9d8a;--warn:#b7791f;--bad:#d64545;--shadow:0 8px 30px rgba(20,30,60,.08)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+.app{display:grid;grid-template-columns:300px 1fr;height:100vh}
+.side{background:var(--panel);border-right:1px solid var(--line);padding:18px 16px;display:flex;flex-direction:column;gap:8px;overflow:auto}
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:4px}
+.logo,.avatar{display:grid;place-items:center;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.logo{width:40px;height:40px;border-radius:12px}
+.avatar{flex:none;width:32px;height:32px;border-radius:10px;font-size:14px}
+.bname{font-weight:700;font-size:17px}.bsub{font-size:12px;color:var(--muted)}
+.status{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);background:var(--panel2);border:1px solid var(--line);padding:7px 10px;border-radius:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--warn)}
+.status.on .dot{background:var(--accent2);box-shadow:0 0 8px var(--accent2)}
+.status.off .dot{background:var(--bad)}
+.lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+select,textarea,button{font:inherit;color:inherit}
+select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.switch{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer;margin-top:6px}
+.muted{color:var(--muted);font-size:12px}
+.ex{display:block;width:100%;text-align:left;background:transparent;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px;cursor:pointer;font-size:13px;color:var(--text)}
+.ex:hover{border-color:var(--accent);background:var(--panel2)}
+.spacer{flex:1}
+.row{display:flex;gap:8px}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:10px;padding:7px 12px;cursor:pointer;color:var(--muted)}
+.ghost:hover{color:var(--text);border-color:var(--accent)}
+.cnt{margin-left:6px;background:var(--panel2);padding:1px 8px;border-radius:99px;font-size:11.5px;letter-spacing:0}
+.lib{max-height:150px;overflow:auto;display:flex;flex-direction:column;gap:4px;margin:4px 0}
+.libitem{display:flex;gap:6px;align-items:flex-start;font-size:12.5px}
+.libitem a{color:var(--text);text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.libitem a:hover{color:var(--accent)}
+.libitem .x{background:none;border:0;color:var(--muted);cursor:pointer;padding:0 4px}
+.main{display:flex;flex-direction:column;min-width:0;height:100vh}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;border-bottom:1px solid var(--line)}
+.title{font-weight:600}
+.feed{flex:1;overflow:auto;padding:24px;scroll-behavior:smooth}
+.hero{max-width:760px;margin:6vh auto 0;text-align:center}
+.hero h1{font-size:32px;margin:0 0 8px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);margin:0 0 22px}
+.hgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:left}
+.hgrid .ex{margin:0;padding:14px;background:var(--panel);box-shadow:var(--shadow)}
+.msg{display:flex;gap:12px;max-width:880px;margin:0 auto 24px}
+.msg.user{justify-content:flex-end}
+.bubble{background:linear-gradient(135deg,var(--accent),#6a7df0);color:#fff;padding:10px 14px;border-radius:16px 16px 4px 16px;max-width:80%;white-space:pre-wrap}
+.body{flex:1;min-width:0}
+.working{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13.5px;padding:2px 0 8px}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.call{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;margin-bottom:6px}
+.call b{font-family:ui-monospace,Menlo,monospace;color:var(--accent)}
+code{background:var(--panel2);border:1px solid var(--line);padding:1px 6px;border-radius:6px;font-size:12px;font-family:ui-monospace,Menlo,monospace}
+.pill{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pill.ok{color:var(--accent2);border-color:var(--accent2)}.pill.warn{color:var(--warn);border-color:var(--warn)}.pill.bad{color:var(--bad);border-color:var(--bad)}
+.rhead{display:flex;gap:8px;align-items:center;margin:8px 0}
+.paper{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.paper:hover{border-color:var(--accent)}
+.ptop{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
+.pt{color:var(--text);font-weight:600;text-decoration:none}.pt:hover{color:var(--accent)}
+.badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;flex:none;max-width:42%}
+.pm{font-size:12.5px;color:var(--muted);margin:3px 0 5px}
+.ps{font-size:13.5px;color:var(--muted)}
+.cats{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.pact{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.mini{background:transparent;border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12px;color:var(--muted);cursor:pointer;text-decoration:none;display:inline-block}
+.mini:hover{color:var(--text);border-color:var(--accent)}
+.note.bad{color:var(--bad);font-size:13px;margin:6px 0}
+.answer{font-size:15.5px;margin-top:6px}.answer p{margin:0 0 10px}.answer ol,.answer ul{padding-left:22px;margin:0 0 10px}.answer li{margin-bottom:8px}.answer a{color:var(--accent)}
+.errbox{border:1px solid var(--bad);color:var(--bad);border-radius:10px;padding:10px 12px;font-size:14px;margin-top:6px}
+.foot{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.stats{font-size:12px;color:var(--muted)}
+.composer{padding:14px 24px 18px}
+.box{max-width:880px;margin:0 auto;display:flex;gap:10px;align-items:flex-end;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:8px 8px 8px 14px;box-shadow:var(--shadow)}
+.box:focus-within{border-color:var(--accent)}
+textarea{flex:1;resize:none;border:0;outline:0;background:transparent;max-height:160px;padding:7px 0}
+.send{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:0;border-radius:12px;padding:9px 18px;font-weight:600;cursor:pointer}
+.send.stop{background:var(--bad)}
+.hint{max-width:880px;margin:8px auto 0;font-size:12px;color:var(--muted);text-align:center}
+@media(max-width:820px){.app{grid-template-columns:1fr}.side{display:none}.hgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="logo">S</div><div><div class="bname">ScholarAgent</div><div class="bsub">local research assistant</div></div></div>
+    <div class="status" id="status"><span class="dot"></span><span id="statusText">Checking Ollama…</span></div>
+
+    <div class="lbl">Mode</div>
+    <select id="mode">
+      <option value="fast">Fast: direct search</option>
+      <option value="agent">Agent: model picks tools</option>
+    </select>
+    <div class="muted" id="modeHint"></div>
+
+    <div class="lbl">Source</div>
+    <select id="source">
+      <option value="auto">Auto</option>
+      <option value="arxiv">arXiv (preprints)</option>
+      <option value="openalex">OpenAlex (all venues, citations)</option>
+    </select>
+
+    <div class="lbl">Model</div>
+    <select id="model"></select>
+    <label class="switch"><input type="checkbox" id="recent"> <span>Prefer recent papers</span></label>
+
+    <div class="lbl">Library <span class="cnt" id="libCount">0</span></div>
+    <div class="lib" id="lib"></div>
+    <div class="row"><button class="ghost" id="libBib">BibTeX</button><button class="ghost" id="libCsv">CSV</button></div>
+
+    <div class="lbl">Try</div>
+    <div id="examples"></div>
+    <div class="spacer"></div>
+    <div class="row"><button class="ghost" id="clear">Clear chat</button><button class="ghost" id="export">Export chat</button></div>
+  </aside>
+
+  <main class="main">
+    <header><div class="title">Research assistant</div><button class="ghost" id="theme">Light / Dark</button></header>
+    <div class="feed" id="feed">
+      <div class="hero" id="hero">
+        <h1>What are you researching?</h1>
+        <p>Runs fully on your Mac. Results come straight from arXiv and OpenAlex; the AI adds a short overview.</p>
+        <div class="hgrid" id="heroEx"></div>
+      </div>
+    </div>
+    <div class="composer">
+      <div class="box">
+        <textarea id="input" rows="1" placeholder="Ask about a topic, or paste an arXiv ID…"></textarea>
+        <button class="send" id="send">Send</button>
+      </div>
+      <div class="hint">Enter to send · Shift+Enter for a new line · cards are verified data, the overview is AI-written</div>
+    </div>
+  </main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const feed = $('#feed'), input = $('#input'), sendBtn = $('#send');
+const EXAMPLES = [
+  "Find recent papers on knowledge graph completion.",
+  "Highly cited papers on link prediction.",
+  "Find papers on drug target prediction.",
+  "Find papers on noisy knowledge graph refinement.",
+  "Get the full details of arXiv 1706.03762."
+];
+const HINTS = {fast: "Searches directly, then streams a short overview. Quickest.",
+               agent: "The model chooses and calls tools itself. Slower, handles follow-ups."};
+const MATCH = {exact: ['ok','exact phrase'], relaxed: ['warn','relaxed match'], broad: ['warn','broad match'], openalex: ['ok','OpenAlex'], fallback: ['warn','arXiv fallback (no citations)']};
+const REL = {high: ['ok','on topic'], partial: ['warn','partly relevant'], low: ['bad','weak match']};
+
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+let history = [], transcript = [], running = false, ctrl = null;
+let lib = store.get('lib', []);
+const known = new Map();   // link -> paper (for button actions)
+
+/* ---------- helpers ---------- */
+const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function inline(s){
+  let h = esc(s); const stash = [];
+  const keep = html => { stash.push(html); return '\u0000' + (stash.length - 1) + '\u0000'; };
+  h = h.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (m,t,u) => keep(`<a href="${u}" target="_blank" rel="noopener">${t}</a>`));
+  h = h.replace(/(https?:\/\/[^\s<)\]]+)/g, (m,u) => {
+    const t = u.match(/[.,;:]+$/), tail = t ? t[0] : '';
+    const core = tail ? u.slice(0, -tail.length) : u;
+    return keep(`<a href="${core}" target="_blank" rel="noopener">${core}</a>`) + tail;
+  });
+  h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>');
+  return h.replace(/\u0000(\d+)\u0000/g, (m,i) => stash[i]);
+}
+function md(src){
+  let out = '', list = null, li = false;
+  const closeLi = () => { if (li) { out += '</li>'; li = false; } };
+  const closeList = () => { closeLi(); if (list) { out += `</${list}>`; list = null; } };
+  for (const line of String(src).split('\n')) {
+    let m;
+    if ((m = line.match(/^\s*\d+\.\s+(.*)$/))) { closeLi(); if (list !== 'ol') { closeList(); out += '<ol>'; list = 'ol'; } out += '<li>' + inline(m[1]); li = true; }
+    else if ((m = line.match(/^\s*[-*]\s+(.*)$/))) { closeLi(); if (list !== 'ul') { closeList(); out += '<ul>'; list = 'ul'; } out += '<li>' + inline(m[1]); li = true; }
+    else if (line.trim() === '') { closeLi(); }
+    else if (li) { out += '<br>' + inline(line); }
+    else { closeList(); out += '<p>' + inline(line) + '</p>'; }
+  }
+  closeList(); return out;
+}
+const scrollDown = () => { feed.scrollTop = feed.scrollHeight; };
+const flash = (btn, txt) => { const old = btn.textContent; btn.textContent = txt; setTimeout(() => btn.textContent = old, 1200); };
+function download(name, text, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; a.click();
+}
+
+/* ---------- BibTeX / CSV ---------- */
+function bib(p){
+  const authors = p.authors || [];
+  const au = authors.join(' and ') + ((p.authors_total || 0) > authors.length ? ' and others' : '');
+  const year = (p.published || '').slice(0, 4);
+  const last = (authors[0] || 'anon').split(' ').pop().toLowerCase().replace(/[^a-z]/g, '');
+  const w = (p.title || '').split(/\s+/).find(x => x.length > 3 && /^[A-Za-z]+$/.test(x)) || 'paper';
+  const key = last + year + w.toLowerCase();
+  const t = s => String(s || '').replace(/([&%_#])/g, '\\$1');
+  if (p.source === 'arxiv')
+    return `@misc{${key},\n  title={${t(p.title)}},\n  author={${t(au)}},\n  year={${year}},\n  eprint={${p.id}},\n  archivePrefix={arXiv},\n  url={${p.link}}\n}`;
+  return `@article{${key},\n  title={${t(p.title)}},\n  author={${t(au)}},\n  year={${year}},\n  journal={${t(p.venue)}},\n  doi={${p.id}},\n  url={${p.link}}\n}`;
+}
+const csvCell = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+function libCsv(){
+  const head = ['title','authors','date','venue','citations','link','source'];
+  const rows = lib.map(p => [p.title, (p.authors||[]).join('; '), p.published, p.venue, p.citations, p.link, p.source].map(csvCell).join(','));
+  return [head.join(','), ...rows].join('\n');
+}
+
+/* ---------- library ---------- */
+const isSaved = p => lib.some(x => x.link === p.link);
+function toggleSave(p){
+  if (isSaved(p)) lib = lib.filter(x => x.link !== p.link); else lib.push(p);
+  store.set('lib', lib); renderLib();
+}
+function renderLib(){
+  $('#libCount').textContent = lib.length;
+  $('#lib').innerHTML = lib.length
+    ? lib.map((p, i) => `<div class="libitem"><a href="${esc(p.link)}" target="_blank" rel="noopener" title="${esc(p.title)}">${esc(p.title)}</a><button class="x" data-del="${i}" title="Remove">×</button></div>`).join('')
+    : '<div class="muted">Saved papers appear here.</div>';
+  document.querySelectorAll('[data-act=save]').forEach(b => {
+    const p = known.get(b.dataset.k); if (p) b.textContent = isSaved(p) ? '★ Saved' : '☆ Save';
+  });
+}
+
+/* ---------- cards ---------- */
+function card(p, full = false){
+  known.set(p.link, p);
+  const k = esc(p.link);
+  const rel = REL[p.relevance];
+  const authors = p.authors || [];
+  const who = full ? authors.join(', ') + ((p.authors_total || 0) > authors.length ? ` +${p.authors_total - authors.length} more` : '')
+                   : authors.slice(0, 3).join(', ') + ((p.authors_total || 0) > 3 ? ' et al.' : '');
+  const meta = [p.published, who, p.venue].filter(Boolean).map(esc).join(' · ');
+  const cites = p.citations != null ? `<span class="pill">${Number(p.citations).toLocaleString()} citations</span>` : '';
+  const src = `<span class="pill">${p.source === 'arxiv' ? 'arXiv' : 'OpenAlex'}</span>`;
+  const cats = full && p.categories ? `<div class="cats">${p.categories.map(c => `<span class="pill">${esc(c)}</span>`).join('')}</div>` : '';
+  const dots = !full && (p.summary || '').length >= 340 ? '…' : '';
+  return `<div class="paper">
+    <div class="ptop"><a class="pt" href="${k}" target="_blank" rel="noopener">${esc(p.title)}</a>
+      <div class="badges">${rel ? `<span class="pill ${rel[0]}">${rel[1]}</span>` : ''}${cites}${src}</div></div>
+    <div class="pm">${meta}${full && p.updated ? ' · updated ' + esc(p.updated) : ''}</div>
+    ${cats}
+    <div class="ps">${esc(p.summary)}${dots}</div>
+    <div class="pact">
+      <button class="mini" data-act="save" data-k="${k}">${isSaved(p) ? '★ Saved' : '☆ Save'}</button>
+      <button class="mini" data-act="bib" data-k="${k}">BibTeX</button>
+      ${!full && p.source === 'arxiv' && p.id ? `<button class="mini" data-act="detail" data-k="${k}">Full abstract</button>` : ''}
+      ${p.pdf_link ? `<a class="mini" href="${esc(p.pdf_link)}" target="_blank" rel="noopener">PDF</a>` : ''}
+    </div></div>`;
+}
+function renderResult(r, ev){
+  const res = ev.result || {};
+  if (res.error) { r.results.insertAdjacentHTML('beforeend', `<div class="note bad">${esc(res.error)}</div>`); return; }
+  if (ev.name === 'get_paper_details') {
+    r.papers.push(res);
+    r.results.insertAdjacentHTML('beforeend', card(res, true));
+    return;
+  }
+  const m = MATCH[res.match_type] || ['warn', res.match_type];
+  const ps = res.papers || [];
+  ps.forEach(p => r.papers.push(p));
+  r.results.insertAdjacentHTML('beforeend',
+    `<div class="rhead"><span class="pill ${m[0]}">${esc(m[1])}</span><span class="muted">${ps.length} papers</span></div>` + ps.map(p => card(p)).join(''));
+}
+
+/* ---------- messages ---------- */
+function addUser(text){
+  const el = document.createElement('div'); el.className = 'msg user';
+  el.innerHTML = `<div class="bubble">${esc(text)}</div>`; feed.appendChild(el); scrollDown();
+}
+function addAssistant(){
+  const el = document.createElement('div'); el.className = 'msg';
+  el.innerHTML = `<div class="avatar">S</div><div class="body">
+    <div class="working"><span class="spin"></span><span class="wtext">Starting…</span></div>
+    <div class="calls"></div><div class="results"></div><div class="answer"></div>
+    <div class="foot" hidden><button class="mini copy">Copy overview</button><button class="mini bibs">BibTeX (all)</button><span class="stats"></span></div></div>`;
+  feed.appendChild(el);
+  const q = s => el.querySelector(s);
+  return {working:q('.working'), wtext:q('.wtext'), calls:q('.calls'), results:q('.results'),
+          answer:q('.answer'), foot:q('.foot'), statsEl:q('.stats'), papers:[], stats:null};
+}
+function addCall(r, ev){
+  r.calls.insertAdjacentHTML('beforeend', `<div class="call"><span class="pill">tool</span><b>${esc(ev.name)}</b>` +
+    Object.entries(ev.args).map(([k,v]) => `<code>${esc(k)}=${esc(JSON.stringify(v))}</code>`).join('') + `<span class="muted meta"></span></div>`);
+}
+function showError(r, text){
+  r.working.hidden = true;
+  r.answer.insertAdjacentHTML('beforeend', `<div class="errbox">${esc(text)}</div>`);
+}
+
+/* ---------- send ---------- */
+async function send(text){
+  text = text.trim(); if (!text || running) return;
+  running = true; setBusy(true); $('#hero').style.display = 'none';
+  addUser(text); input.value = ''; autoGrow();
+  const r = addAssistant();
+  let answer = '', memory = '', aborted = false;
+  ctrl = new AbortController();
+  const body = {question: text, history: history.slice(-8), model: $('#model').value,
+                mode: $('#mode').value, source: $('#source').value, recent: $('#recent').checked};
+  try {
+    const res = await fetch('/api/chat', {method: 'POST', headers: {'Content-Type': 'application/json'}, signal: ctrl.signal, body: JSON.stringify(body)});
+    if (!res.ok) throw new Error('Server returned ' + res.status);
+    const reader = res.body.getReader(), dec = new TextDecoder(); let buf = '';
+    while (true) {
+      const {done, value} = await reader.read(); if (done) break;
+      buf += dec.decode(value, {stream: true}); let i;
+      while ((i = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+        if (!line) continue;
+        const ev = JSON.parse(line);
+        if (ev.type === 'status') r.wtext.textContent = ev.text;
+        else if (ev.type === 'tool_call') addCall(r, ev);
+        else if (ev.type === 'tool_result') {
+          const meta = r.calls.lastElementChild && r.calls.lastElementChild.querySelector('.meta');
+          if (meta) meta.textContent = ev.seconds + 's' + (ev.result && ev.result.cached ? ' · cached' : '');
+          renderResult(r, ev);
+        }
+        else if (ev.type === 'token') { answer += ev.text; r.working.hidden = true; r.answer.innerHTML = md(answer); }
+        else if (ev.type === 'stats') r.stats = ev;
+        else if (ev.type === 'answer') { answer = ev.text; memory = ev.memory || ev.text; r.working.hidden = true; r.answer.innerHTML = md(answer); }
+        else if (ev.type === 'error') showError(r, ev.text);
+        scrollDown();
+      }
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') aborted = true;
+    else showError(r, 'Could not reach the server: ' + e.message);
+  } finally {
+    r.working.hidden = true;
+    if (aborted && !answer) r.answer.innerHTML = '<span class="muted">Stopped.</span>';
+    if (answer || r.papers.length) {
+      r.foot.hidden = false;
+      if (r.stats) r.statsEl.textContent = `${r.stats.total}s total · model ${r.stats.model}s · search ${r.stats.tools}s · ${r.stats.mode} mode`;
+      r.foot.querySelector('.copy').onclick = e => { navigator.clipboard.writeText(answer); flash(e.target, 'Copied'); };
+      const bb = r.foot.querySelector('.bibs');
+      if (!r.papers.length) bb.hidden = true;
+      bb.onclick = e => { navigator.clipboard.writeText(r.papers.map(bib).join('\n\n')); flash(e.target, 'Copied'); };
+    }
+    if (answer) history.push({role: 'user', content: text}, {role: 'assistant', content: memory || answer});
+    if (answer || r.papers.length) transcript.push({q: text, a: answer, papers: r.papers});
+    running = false; setBusy(false); scrollDown();
+  }
+}
+function setBusy(b){ sendBtn.textContent = b ? 'Stop' : 'Send'; sendBtn.classList.toggle('stop', b); }
+function autoGrow(){ input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px'; }
+
+/* ---------- wiring ---------- */
+sendBtn.onclick = () => running ? ctrl.abort() : send(input.value);
+input.addEventListener('input', autoGrow);
+input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!running) send(input.value); } });
+for (const box of [$('#examples'), $('#heroEx')]) {
+  EXAMPLES.forEach(t => { const b = document.createElement('button'); b.className = 'ex'; b.textContent = t; b.onclick = () => send(t); box.appendChild(b); });
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const p = known.get(b.dataset.k); if (!p) return;
+  const act = b.dataset.act;
+  if (act === 'save') toggleSave(p);
+  else if (act === 'bib') { navigator.clipboard.writeText(bib(p)); flash(b, 'Copied'); }
+  else if (act === 'detail') send(`Get the full details of arXiv ${p.id}`);
+});
+$('#lib').addEventListener('click', e => {
+  const d = e.target.dataset.del;
+  if (d !== undefined) { lib.splice(+d, 1); store.set('lib', lib); renderLib(); }
+});
+$('#libBib').onclick = () => lib.length && download('library.bib', lib.map(bib).join('\n\n'), 'text/plain');
+$('#libCsv').onclick = () => lib.length && download('library.csv', libCsv(), 'text/csv');
+$('#clear').onclick = () => { if (running) return; history = []; transcript = []; [...feed.querySelectorAll('.msg')].forEach(m => m.remove()); $('#hero').style.display = ''; };
+$('#export').onclick = () => {
+  if (!transcript.length) return;
+  const text = transcript.map(t => `## ${t.q}\n\n${t.a}\n\n` + t.papers.map(p => `- [${p.title}](${p.link}) (${p.published})`).join('\n')).join('\n\n');
+  download('scholaragent-chat.md', text, 'text/markdown');
+};
+
+/* settings */
+const root = document.documentElement;
+root.dataset.theme = store.get('theme', 'dark');
+$('#theme').onclick = () => { root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark'; store.set('theme', root.dataset.theme); };
+$('#mode').value = store.get('mode', 'fast');
+$('#source').value = store.get('source', 'auto');
+$('#recent').checked = store.get('recent', false);
+const showHint = () => { $('#modeHint').textContent = HINTS[$('#mode').value]; };
+$('#mode').onchange = () => { store.set('mode', $('#mode').value); showHint(); };
+$('#source').onchange = () => store.set('source', $('#source').value);
+$('#recent').onchange = e => store.set('recent', e.target.checked);
+showHint(); renderLib(); input.focus();
+
+fetch('/api/models').then(r => r.json()).then(d => {
+  const sel = $('#model'), st = $('#status');
+  if (!d.models.length) { st.classList.add('off'); $('#statusText').textContent = 'Ollama offline: open the Ollama app'; sel.innerHTML = `<option>${esc(d.default)}</option>`; return; }
+  st.classList.add('on'); $('#statusText').textContent = 'Ollama online · local';
+  d.models.forEach(m => { const o = document.createElement('option'); o.value = o.textContent = m; if (m === d.default) o.selected = true; sel.appendChild(o); });
+}).catch(() => { $('#status').classList.add('off'); $('#statusText').textContent = 'Server error'; });
+</script>
+</body>
+</html>
